@@ -65,7 +65,7 @@ function Search() {
             const lat = position.coords.latitude;
             const long = position.coords.longitude;
             console.log(lat, long)
-            axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat},${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
+            axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
               .then(response => {
               console.log(response);
               setLocations(response.data.results)
@@ -74,7 +74,7 @@ function Search() {
           });
         }
         
-      }
+      } else { setSearchText(''); setIsLoaded(false);}
     }, [searchText, radius])
 
   return (
