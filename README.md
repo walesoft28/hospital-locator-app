@@ -1,4 +1,8 @@
-## Hospital Locator App
+# Hospital Locator App
+
+In this COVID world that we live in, it is important that people can easily access medical assistance if need be. 
+
+## This Application can locate all the hospitals within a given area.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
