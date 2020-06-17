@@ -27,24 +27,29 @@ const useStyles = makeStyles({
   }
 });
 
-const LocationResults: React.SFC = () => {
-  const classes = useStyles();
-  
+interface LocationProps {
+  name: string;
+  formatted_address: string;
+  business_status: string
+}
 
+function LocationResults(props: LocationProps){
+  const classes = useStyles();
+  const {name, formatted_address, business_status} = props;
   return (
-    <Grid container className={classes.spaceTop}>
+      <Grid container className={classes.spaceTop}>
       <Grid item xs={12}>
       <Card className={classes.root}>
         <CardContent>
           <Typography variant="h5" component="h2">
-            Hospital Name
+            {name}
           </Typography>
           <Typography className={classes.pos} color="textSecondary">
-            Hospital Address
+            {formatted_address}
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small">Details</Button>
+          <Button size="small">{business_status}</Button>
         </CardActions>
       </Card>
     </Grid>

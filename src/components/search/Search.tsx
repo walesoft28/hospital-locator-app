@@ -1,12 +1,11 @@
 import React, { ChangeEvent, FormEvent, useState, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
-import Grid from '@material-ui/core/Grid';
-import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
+import Grid from '@material-ui/core/Grid';
 import axios from 'axios';
+
+import LocationResults from '../location-results/LocationResults';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -24,57 +23,99 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
+interface Location {
+  name: string;
+  formatted_address: string;
+  business_status: string
+}
+
 function Search() {
     const classes = useStyles();
-    
+        
     const [searchText, setSearchText] = useState<string>('');
-    const [radius, setRadius] = useState<number>(15);
-
+    const [radius, setRadius] = useState<number | any>(15000);
+    const [isLoaded, setIsLoaded] = useState<boolean>(false);
+    const [locations, setLocations] = useState<any>([]);
     
-   const onTextChange = (e: ChangeEvent<HTMLInputElement>) => {
-      setSearchText(e.target.value);
-            
-  }
+    const PLACE = "https://maps.googleapis.com/maps/api/place/textsearch/json?";
+    const PROXY = "https://secret-atoll-96241.herokuapp.com/";
+    const API_KEY = "AIzaSyDA0QCg4CpfkOV9OVCvZEGrnL5s4BM-IU4";
+    const RADIUS = radius;
+    const SEARCH_QUERY = searchText;
+    const TYPE = 'hospital';
 
-  const onRadiusChange = (e: React.ChangeEvent<{
-    name?: string | undefined;
-    value: number;
-}>) => {
-    setRadius(e.target.value);
-  }
+    console.log(SEARCH_QUERY);
+    console.log(RADIUS); 
+
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+    }
+
+    const handleTextChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setSearchText(e.target.value);    
+    }
+
+    const handleRadiusChange = (event: ChangeEvent<HTMLInputElement>) => {
+      setRadius(event.target.value);   
+    }
+
+    useEffect(() => {      
+      if(searchText !== ''){
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const long = position.coords.longitude;
+            console.log(lat, long)
+            axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat},${long}&radius=${RADIUS}&type=${TYPE}&key=${API_KEY}`)
+              .then(response => {
+              console.log(response);
+              setLocations(response.data.results)
+              setIsLoaded(true);
+            })
+          });
+        }
+        
+      }
+    }, [searchText, radius])
 
   return (
     <div>
         <Grid container spacing={1}>
             <Grid item xs={9}>
-                <form className={classes.root} noValidate autoComplete="off">
+                <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
                     <TextField 
                       id="outlined-search" 
                       label="Search Hospitals" 
                       variant="outlined" 
                       name="searchText"
                       value={searchText}
-                      onChange={onTextChange}
+                      onChange={handleTextChange}
                     />
-                </form>
+                  </form>
             </Grid>
             <Grid item xs={3}>
-            <FormControl variant="outlined" className={classes.formControl}>
-                <InputLabel id="outlined-label">Radius</InputLabel>
-                <Select
-                    id="geo-fencing-radius"
-                    label="Radius"
-                    value={radius}
-                >
-                <MenuItem value={5}>5 km</MenuItem>
-                <MenuItem value={10}>10 km</MenuItem>
-                <MenuItem value={15}>15 km</MenuItem>
-                </Select>
-            </FormControl>
+              <form className={classes.root} noValidate autoComplete="off">
+                <TextField
+                   id="standard-select-radius"
+                   select
+                   variant="outlined"
+                   label="Raduis in KM"
+                   value={radius}
+                   onChange={handleRadiusChange}
+                 >
+                  <MenuItem value={5000}>5 Km</MenuItem>
+                  <MenuItem value={10000}>10 Km</MenuItem>
+                  <MenuItem value={15000}>15 Km</MenuItem>
+                  <MenuItem value={20000}>20 Km</MenuItem>
+                 </TextField>
+              </form>
             </Grid>
         </Grid>
-        
-    
+
+        { isLoaded ? (locations.map((location: Location) => {
+            return <LocationResults {...location}/>
+    })) : (null) }
+
     </div>
   );
 }

@@ -6,14 +6,13 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import useScrollTrigger from '@material-ui/core/useScrollTrigger';
-import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import Zoom from '@material-ui/core/Zoom';
 
 import Search from '../search/Search';
-import LocationResults from '../location-results/LocationResults';
+
 
 interface Props {
     children: React.ReactElement;
@@ -69,12 +68,6 @@ const NavBar: React.SFC = () => {
       <Toolbar id="back-to-top-anchor" />
       <Container maxWidth="md">
           <Search />
-          <LocationResults />
-        <Box my={3}>
-          {[...new Array(20)]
-            .map(
-              () => <LocationResults /> )}
-        </Box>
       </Container> 
          <ScrollTop>
             <Fab color="secondary" size="small" aria-label="scroll back to top">
