@@ -7,6 +7,7 @@ import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import useScrollTrigger from '@material-ui/core/useScrollTrigger';
 import Container from '@material-ui/core/Container';
+import Button from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import Zoom from '@material-ui/core/Zoom';
@@ -62,7 +63,8 @@ const NavBar: React.SFC = () => {
       <CssBaseline />
       <AppBar>
         <Toolbar>
-          <Typography variant="h5">Hospital Locator App</Typography>
+          <Typography variant="h6" style={{flexGrow: 5}}>Hospital Locator App</Typography>
+          <Button color="inherit" style={{flexGrow: 1}}>History</Button>
         </Toolbar>
       </AppBar>
       <Toolbar id="back-to-top-anchor" />
