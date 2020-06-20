@@ -6,13 +6,12 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import useScrollTrigger from '@material-ui/core/useScrollTrigger';
-import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import Zoom from '@material-ui/core/Zoom';
+import { NavLink } from 'react-router-dom';
 
-import Search from '../search/Search';
 
 
 interface Props {
@@ -25,6 +24,10 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'fixed',
       bottom: theme.spacing(2),
       right: theme.spacing(2),
+    },
+    textColor: {
+      color: 'white',
+      textDecorationLine: 'none',
     },
   }),
 );
@@ -58,21 +61,23 @@ function ScrollTop(props: Props) {
   }
  
 const NavBar: React.SFC = () => {
+    const classes = useStyles();
     return ( 
     <React.Fragment>
       <CssBaseline />
       <AppBar>
         <Toolbar>
-          <Typography variant="h6" style={{flexGrow: 5}}>Hospital Locator App</Typography>
-          <Button color="inherit" style={{flexGrow: 1}}>History</Button>
+          <Typography variant="h6" style={{flexGrow: 5}}>
+            <NavLink to="/" className={classes.textColor}>Hospital Locator App</NavLink>
+          </Typography>
+          <Button className={classes.textColor} style={{flexGrow: 1}}>
+            <NavLink to="/history" className={classes.textColor}>History</NavLink>
+          </Button>
         </Toolbar>
       </AppBar>
-      <Toolbar id="back-to-top-anchor" />
-      <Container maxWidth="md">
-          <Search />
-      </Container> 
+      <Toolbar id="back-to-top-anchor" /> 
          <ScrollTop>
-            <Fab color="secondary" size="small" aria-label="scroll back to top">
+            <Fab color="secondary" size="large" aria-label="scroll back to top">
                 <KeyboardArrowUpIcon />
             </Fab>
         </ScrollTop>  

@@ -3,7 +3,11 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Grid from '@material-ui/core/Grid';
+import Fab from '@material-ui/core/Fab';
+import SearchIcon from '@material-ui/icons/Search'; 
 import axios from 'axios';
+import debounce from 'lodash/debounce';
+
 
 import LocationResults from '../location-results/LocationResults';
 
@@ -34,7 +38,7 @@ function Search() {
         
     const [searchText, setSearchText] = useState<string>('');
     const [radius, setRadius] = useState<number | any>(15000);
-    const [isLoaded, setIsLoaded] = useState<boolean>(false);
+    // const [loading, setLoading] = useState<boolean>(true)
     const [locations, setLocations] = useState<any>([]);
     
     const PLACE = "https://maps.googleapis.com/maps/api/place/textsearch/json?";
@@ -51,36 +55,39 @@ function Search() {
     }
 
     const handleTextChange = (e: ChangeEvent<HTMLInputElement>) => {
-      setSearchText(e.target.value);    
+      setSearchText(e.target.value); 
     }
 
     const handleRadiusChange = (event: ChangeEvent<HTMLInputElement>) => {
       setRadius(event.target.value);   
     }
 
+    const getPlaces = debounce(() => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const long = position.coords.longitude;
+          console.log(lat, long)
+          axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
+            .then(response => {
+            console.log(response);
+            setLocations(response.data.results)
+            // setLoading(false);
+          })
+        });
+      }
+    }, 500)
+
     useEffect(() => {      
       if(searchText !== ''){
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(position => {
-            const lat = position.coords.latitude;
-            const long = position.coords.longitude;
-            console.log(lat, long)
-            axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
-              .then(response => {
-              console.log(response);
-              setLocations(response.data.results)
-              setIsLoaded(true);
-            })
-          });
-        }
-        
-      } else { setSearchText(''); setIsLoaded(false);}
+        getPlaces();
+      } else { setLocations([])}
     }, [searchText, radius])
 
   return (
     <div>
         <Grid container spacing={1}>
-            <Grid item xs={9}>
+            <Grid item xs={7}>
                 <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
                     <TextField 
                       id="outlined-search" 
@@ -92,6 +99,13 @@ function Search() {
                     />
                   </form>
             </Grid>
+            <Grid xs={2}>
+              <div>
+                <Fab color="secondary" aria-label="add" style={{marginTop: 60}}>
+                  <SearchIcon />
+                </Fab>
+              </div>
+              </Grid>
             <Grid item xs={3}>
               <form className={classes.root} noValidate autoComplete="off">
                 <TextField
@@ -111,7 +125,7 @@ function Search() {
             </Grid>
         </Grid>
 
-        { isLoaded ? (locations.map((location: Location) => {
+        { locations.length > 0 ? (locations.map((location: Location) => {
             return <LocationResults {...location}/>
     })) : (null) }
 
