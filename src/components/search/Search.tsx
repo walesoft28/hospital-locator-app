@@ -3,11 +3,12 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Grid from '@material-ui/core/Grid';
-import Fab from '@material-ui/core/Fab';
+import InputAdornment from "@material-ui/core/InputAdornment";
+import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search'; 
 import axios from 'axios';
 import debounce from 'lodash/debounce';
-
+import firebase from '../config/firebase-config';
 
 import LocationResults from '../location-results/LocationResults';
 
@@ -24,6 +25,9 @@ const useStyles = makeStyles((theme: Theme) =>
         marginTop: theme.spacing(7),
         width: '100%',
       },
+    fullWidth: {
+      width: '100%',
+    },
   }),
 );
 
@@ -38,7 +42,7 @@ function Search() {
         
     const [searchText, setSearchText] = useState<string>('');
     const [radius, setRadius] = useState<number | any>(15000);
-    // const [loading, setLoading] = useState<boolean>(true)
+    const [query, setQuery] = useState<string>(searchText);
     const [locations, setLocations] = useState<any>([]);
     
     const PLACE = "https://maps.googleapis.com/maps/api/place/textsearch/json?";
@@ -52,6 +56,11 @@ function Search() {
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      console.log('submitted');
+      const data = searchText;
+      setQuery(data);
+      onCreate();
+      console.log(query);
     }
 
     const handleTextChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +71,16 @@ function Search() {
       setRadius(event.target.value);   
     }
 
-    const getPlaces = debounce(() => {
+    const onCreate = () => {
+      const db = firebase.firestore();
+      if (searchText !== '') {
+        db.collection("Places").add({location: searchText, date: new Date().toLocaleDateString()});
+        console.log('Record Added Successfully');
+        console.log(query)
+      }
+    }
+
+    const getPlaces = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           const lat = position.coords.latitude;
@@ -71,66 +89,70 @@ function Search() {
           axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
             .then(response => {
             console.log(response);
-            setLocations(response.data.results)
-            // setLoading(false);
+            setLocations(response.data.results);
           })
         });
       }
-    }, 500)
+    }
 
     useEffect(() => {      
       if(searchText !== ''){
         getPlaces();
       } else { setLocations([])}
-    }, [searchText, radius])
+    }, [query])
 
   return (
     <div>
-        <Grid container spacing={1}>
-            <Grid item xs={7}>
-                <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
-                    <TextField 
-                      id="outlined-search" 
-                      label="Search Hospitals" 
-                      variant="outlined" 
-                      name="searchText"
-                      value={searchText}
-                      onChange={handleTextChange}
-                    />
-                  </form>
-            </Grid>
-            <Grid xs={2}>
-              <div>
-                <Fab color="secondary" aria-label="add" style={{marginTop: 60}}>
-                  <SearchIcon />
-                </Fab>
-              </div>
+        <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
+          <Grid container >
+            <Grid item xs={8}>
+                <TextField 
+                  id="outlined-search" 
+                  label="Search Hospitals" 
+                  variant="outlined" 
+                  name="searchText"
+                  value={searchText}
+                  onChange={handleTextChange}
+                  className={classes.fullWidth}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton type="submit">
+                          <SearchIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
               </Grid>
-            <Grid item xs={3}>
-              <form className={classes.root} noValidate autoComplete="off">
+              <Grid xs={1}></Grid>
+              <Grid item xs={3}>
                 <TextField
                    id="standard-select-radius"
                    select
-                   variant="outlined"
+                   variant="standard"
                    label="Raduis in KM"
                    value={radius}
                    onChange={handleRadiusChange}
+                   className={classes.fullWidth}
                  >
                   <MenuItem value={5000}>5 Km</MenuItem>
                   <MenuItem value={10000}>10 Km</MenuItem>
                   <MenuItem value={15000}>15 Km</MenuItem>
                   <MenuItem value={20000}>20 Km</MenuItem>
                  </TextField>
-              </form>
-            </Grid>
-        </Grid>
+              </Grid>  
+          </Grid>         
+        </form>
 
-        { locations.length > 0 ? (locations.map((location: Location) => {
+        { query && locations.length > 0 ? (locations.map((location: Location) => {
             return <LocationResults {...location}/>
-    })) : (null) }
+    })) : (null)}
 
+{/* (<div><h4>Oops!...there are no search results for your query!</h4></div>) */}
     </div>
   );
+
 }
 
 export default Search;
