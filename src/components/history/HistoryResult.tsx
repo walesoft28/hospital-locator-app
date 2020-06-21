@@ -1,4 +1,4 @@
-import React, { Children } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
@@ -6,6 +6,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { NavLink } from 'react-router-dom';
+
 
 
 const useStyles = makeStyles({
@@ -31,16 +32,20 @@ const useStyles = makeStyles({
 interface HistoryResultsProps {
   location: string;
   date: string;
+  radius: number;
+  target: any;
 }
 
 function HistoryResults(props: HistoryResultsProps){
-  const classes = useStyles();
-  const {location, date} = props;
+    const classes = useStyles();
+
+    const {location, date, radius, target} = props;
+
   return (
     <Grid container className={classes.spaceTop}>
       <Grid item xs={12}>
         <Card className={classes.root}>
-        <CardActionArea component={NavLink} to="/">
+        <CardActionArea  onClick={() => target(location, radius)}>
             <CardContent>
             <Typography variant="h5" component="h2">
                 {location}

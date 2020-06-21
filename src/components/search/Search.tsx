@@ -6,8 +6,8 @@ import Grid from '@material-ui/core/Grid';
 import InputAdornment from "@material-ui/core/InputAdornment";
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search'; 
+import CircularProgress from '@material-ui/core/CircularProgress';
 import axios from 'axios';
-import debounce from 'lodash/debounce';
 import firebase from '../config/firebase-config';
 
 import LocationResults from '../location-results/LocationResults';
@@ -43,24 +43,30 @@ function Search() {
     const [searchText, setSearchText] = useState<string>('');
     const [radius, setRadius] = useState<number | any>(15000);
     const [query, setQuery] = useState<string>(searchText);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [status, setStatus] = useState<boolean>(false);
     const [locations, setLocations] = useState<any>([]);
     
     const PLACE = "https://maps.googleapis.com/maps/api/place/textsearch/json?";
     const PROXY = "https://secret-atoll-96241.herokuapp.com/";
     const RADIUS = radius;
-    const SEARCH_QUERY = searchText;
+    const SEARCH_QUERY = query;
     const TYPE = 'hospital';
 
+    console.log(searchText);
     console.log(SEARCH_QUERY);
     console.log(RADIUS); 
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      if (searchText) setLoading(true);
+      setStatus(false);
       console.log('submitted');
       const data = searchText;
       setQuery(data);
       onCreate();
       console.log(query);
+      setSearchText('');
     }
 
     const handleTextChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +80,7 @@ function Search() {
     const onCreate = () => {
       const db = firebase.firestore();
       if (searchText !== '') {
-        db.collection("Places").add({location: searchText, date: new Date().toLocaleDateString()});
+        db.collection("Places").add({location: searchText, date: new Date().toLocaleDateString(), radius: radius});
         console.log('Record Added Successfully');
         console.log(query)
       }
@@ -89,14 +95,21 @@ function Search() {
           axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
             .then(response => {
             console.log(response);
+            if (response.data.results.length > 0) {
+              setLoading(false);
+            } else {
+              setLoading(false);
+              setStatus(true);
+            }
             setLocations(response.data.results);
           })
+          .catch(err => console.log(err))
         });
       }
     }
 
     useEffect(() => {      
-      if(searchText !== ''){
+      if(query){
         getPlaces();
       } else { setLocations([])}
     }, [query])
@@ -145,11 +158,17 @@ function Search() {
           </Grid>         
         </form>
 
+        {status ? (<div><h4 style={{textAlign: 'center'}}>Oops!......there are no search results for your query!</h4></div>) : (null)}
+
+        {loading ? ( <div className={classes.root} style={{display: 'flex', justifyContent: 'center'}}>
+          <CircularProgress color="secondary" />
+        </div>) : (null)}
+       
         { query && locations.length > 0 ? (locations.map((location: Location) => {
             return <LocationResults {...location}/>
     })) : (null)}
 
-{/* (<div><h4>Oops!...there are no search results for your query!</h4></div>) */}
+
     </div>
   );
 

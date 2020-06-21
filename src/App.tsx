@@ -14,8 +14,7 @@ function App() {
         <Container maxWidth="md">
           <Route exact path='/' component={Search} />
           <Route path='/history' component={History} />
-        </Container>
-        
+        </Container>   
       </div>
     </BrowserRouter> 
   );
