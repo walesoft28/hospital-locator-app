@@ -39,6 +39,7 @@ function History() {
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<boolean>(false);
   const [locations, setLocations] = useState<any>([]);
+  const [initLoad, setInitLoad] = useState<boolean>(true);
 
   const PLACE = "https://maps.googleapis.com/maps/api/place/textsearch/json?";
   const PROXY = "https://secret-atoll-96241.herokuapp.com/";
@@ -53,9 +54,6 @@ function History() {
       setStatus(false);
   }
 
-  console.log(target, range);
-
-
   const getPlaces = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
@@ -64,9 +62,8 @@ function History() {
           console.log(lat, long)
           axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
             .then(response => {
-            console.log(response);
             if (response.data.results.length > 0) {
-              setLoading(false);
+              setLoading(false)
             } else {
               setLoading(false);
               setStatus(true);
@@ -95,12 +92,15 @@ function History() {
       db.collection("Places")
         .onSnapshot((data) => {
             setPlaces(data.docs.map(doc => ({...doc.data()})));
+            setInitLoad(false);
         })
   }
 
-  console.log(places)
   return (
     <div>
+       {initLoad ? ( <div className={classes.root} style={{display: 'flex', justifyContent: 'center'}}>
+          <CircularProgress color="secondary" />
+        </div>) : (null)}
         {target && locations.length > 0 ? (locations.map((location: Location) => {
             return <LocationResults {...location}/>
     })) : (<div className={classes.root}>

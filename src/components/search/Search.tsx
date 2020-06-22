@@ -53,10 +53,6 @@ function Search() {
     const SEARCH_QUERY = query;
     const TYPE = 'hospital';
 
-    console.log(searchText);
-    console.log(SEARCH_QUERY);
-    console.log(RADIUS); 
-
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (searchText) setLoading(true);
