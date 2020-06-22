@@ -4,6 +4,10 @@ import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import firebase from '../config/firebase-config';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Button from '@material-ui/core/Button';
+import Icon from '@material-ui/core/Icon';
+import SearchIcon from '@material-ui/icons/Search';
+import { NavLink } from 'react-router-dom';
 import axios from 'axios';
 
 import HistoryResults from './HistoryResult';
@@ -17,6 +21,15 @@ const useStyles = makeStyles((theme: Theme) =>
         padding: 20,
         height: 100,
         textAlign: 'center',
+      },
+      button: {
+        width: '100%',
+        marginTop: 20,
+        textAlign: 'center',
+      },
+      textColor: {
+        color: 'white',
+        textDecorationLine: 'none',
       },
   }),
 );
@@ -101,9 +114,14 @@ function History() {
        {initLoad ? ( <div className={classes.root} style={{display: 'flex', justifyContent: 'center'}}>
           <CircularProgress color="secondary" />
         </div>) : (null)}
-        {target && locations.length > 0 ? (locations.map((location: Location) => {
+        {target && locations.length > 0 ? (<div><NavLink to="/" className={classes.textColor} ><Button
+          variant="outlined"
+          color="secondary"
+          className={classes.button}
+          startIcon={<SearchIcon />}
+        >Go to Search</Button></NavLink> {locations.map((location: Location) => {
             return <LocationResults {...location}/>
-    })) : (<div className={classes.root}>
+    })}</div>) : (<div className={classes.root}>
                 <Typography variant="h5" gutterBottom>
                     View your search history below!
                 </Typography>
