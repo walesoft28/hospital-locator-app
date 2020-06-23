@@ -31,25 +31,29 @@ interface HistoryResultsProps {
   location: string;
   date: string;
   radius: number;
+  category: string;
   target: any;
 }
 
 function HistoryResults(props: HistoryResultsProps){
     const classes = useStyles();
 
-    const {location, date, radius, target} = props;
+    const {location, date, radius, category, target} = props;
 
   return (
     <Grid container className={classes.spaceTop}>
       <Grid item xs={12}>
         <Card className={classes.root}>
-        <CardActionArea  onClick={() => target(location, radius)}>
+        <CardActionArea  onClick={() => target(location, radius, category)}>
             <CardContent>
             <Typography variant="h5" component="h2">
                 {location}
             </Typography>
                 <Typography className={classes.pos} color="textSecondary">
                     {date}
+                </Typography>
+                <Typography className={classes.pos} color="textSecondary">
+                    Radius: {radius / 1000}KM  &nbsp; | &nbsp; Category: {category}
                 </Typography>
             </CardContent>
             </CardActionArea>

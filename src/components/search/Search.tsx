@@ -42,6 +42,8 @@ function Search() {
         
     const [searchText, setSearchText] = useState<string>('');
     const [radius, setRadius] = useState<number | any>(15000);
+    const [category, setCategory] = useState<string>('hospital');
+    const [submit, setSubmit] = useState<boolean>(false);
     const [query, setQuery] = useState<string>(searchText);
     const [loading, setLoading] = useState<boolean>(false);
     const [status, setStatus] = useState<boolean>(false);
@@ -51,34 +53,41 @@ function Search() {
     const PROXY = "https://secret-atoll-96241.herokuapp.com/";
     const RADIUS = radius;
     const SEARCH_QUERY = query;
-    const TYPE = 'hospital';
+    const TYPE = category;
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if (searchText) setLoading(true);
+      setSubmit(prev => !prev);
+      if (searchText !== '') setLoading(true);
       setStatus(false);
       console.log('submitted');
-      const data = searchText;
-      setQuery(data);
-      onCreate();
-      console.log(query);
-      setSearchText('');
+      setQuery(searchText);
+      saveToDatabase();
+      // setSearchText('');
     }
-
+   
     const handleTextChange = (e: ChangeEvent<HTMLInputElement>) => {
       setSearchText(e.target.value); 
     }
 
-    const handleRadiusChange = (event: ChangeEvent<HTMLInputElement>) => {
-      setRadius(event.target.value);   
+    const handleRadiusChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setRadius(e.target.value);   
     }
 
-    const onCreate = () => {
+    const handleCategoryChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setCategory(e.target.value);
+    }
+
+    const saveToDatabase = () => {
       const db = firebase.firestore();
       if (searchText !== '') {
-        db.collection("Places").add({location: searchText, date: new Date().toLocaleDateString(), radius: radius});
+        db.collection("Places").add({
+          location: searchText, 
+          date: new Date().toLocaleDateString(), 
+          radius: radius,
+          category: category
+        });
         console.log('Record Added Successfully');
-        console.log(query)
       }
     }
 
@@ -87,10 +96,10 @@ function Search() {
         navigator.geolocation.getCurrentPosition(position => {
           const lat = position.coords.latitude;
           const long = position.coords.longitude;
-          console.log(lat, long)
+          // console.log(lat, long)
           axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
             .then(response => {
-            console.log(response);
+            // console.log(response);
             if (response.data.results.length > 0) {
               setLoading(false);
             } else {
@@ -108,16 +117,16 @@ function Search() {
       if(query){
         getPlaces();
       } else { setLocations([])}
-    }, [query])
+    }, [submit])
 
   return (
     <div>
         <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
-          <Grid container >
-            <Grid item xs={8}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
                 <TextField 
                   id="outlined-search" 
-                  label="Search Hospitals" 
+                  label="Search hospitals, clinics, pharmacy .... " 
                   variant="outlined" 
                   name="searchText"
                   value={searchText}
@@ -134,13 +143,12 @@ function Search() {
                   }}
                 />
               </Grid>
-              <Grid xs={1}></Grid>
-              <Grid item xs={3}>
+              <Grid item xs={4} md={2}>
                 <TextField
                    id="standard-select-radius"
                    select
-                   variant="standard"
-                   label="Raduis in KM"
+                   variant="outlined"
+                   label="Raduis"
                    value={radius}
                    onChange={handleRadiusChange}
                    className={classes.fullWidth}
@@ -149,6 +157,22 @@ function Search() {
                   <MenuItem value={10000}>10 Km</MenuItem>
                   <MenuItem value={15000}>15 Km</MenuItem>
                   <MenuItem value={20000}>20 Km</MenuItem>
+                 </TextField>
+              </Grid>  
+              <Grid item xs={8} md={4}>
+                <TextField
+                   id="standard-select-category"
+                   select
+                   variant="outlined"
+                   label="Choose Catergory"
+                   value={category}
+                   onChange={handleCategoryChange}
+                   className={classes.fullWidth}
+                 >
+                  <MenuItem value="hospital">Hospitals</MenuItem>
+                  <MenuItem value="clinic">Clinics</MenuItem>
+                  <MenuItem value="pharmacy">Pharmacy</MenuItem>
+                  <MenuItem value="medical office">Medical Offices</MenuItem>
                  </TextField>
               </Grid>  
           </Grid>         

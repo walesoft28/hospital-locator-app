@@ -5,7 +5,6 @@ import Typography from '@material-ui/core/Typography';
 import firebase from '../config/firebase-config';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
-import Icon from '@material-ui/core/Icon';
 import SearchIcon from '@material-ui/icons/Search';
 import { NavLink } from 'react-router-dom';
 import axios from 'axios';
@@ -49,6 +48,7 @@ function History() {
 
   const [target, setTarget] = useState<string | null>(null);
   const [range, setRange] = useState<number | null>(null);
+  const [category, setCategory] = useState<string>('hospital');
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<boolean>(false);
   const [locations, setLocations] = useState<any>([]);
@@ -58,11 +58,12 @@ function History() {
   const PROXY = "https://secret-atoll-96241.herokuapp.com/";
   const RADIUS = range;
   const SEARCH_QUERY = target;
-  const TYPE = 'hospital';
+  const TYPE = category;
 
-  const handleClick = (target: string, range: number) => {
+  const handleClick = (target: string, range: number, category: string) => {
       setTarget(target);
       setRange(range);
+      setCategory(category);
       setLoading(true);
       setStatus(false);
   }
