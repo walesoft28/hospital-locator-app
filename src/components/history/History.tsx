@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import firebase from '../config/firebase-config';
@@ -8,8 +7,8 @@ import Button from '@material-ui/core/Button';
 import SearchIcon from '@material-ui/icons/Search';
 import { NavLink } from 'react-router-dom';
 import axios from 'axios';
-
 import HistoryResults from './HistoryResult';
+import NavBar from '../navbar/NavBar';
 import LocationResults from '../location-results/LocationResults';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -20,6 +19,16 @@ const useStyles = makeStyles((theme: Theme) =>
         padding: 20,
         height: 100,
         textAlign: 'center',
+      },
+      loader: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%',
       },
       button: {
         width: '100%',
@@ -43,9 +52,6 @@ function History() {
   const classes = useStyles();
 
   const [places, setPlaces] = useState<any[]>([]);
-
-  
-
   const [target, setTarget] = useState<string | null>(null);
   const [range, setRange] = useState<number | null>(null);
   const [category, setCategory] = useState<string>('hospital');
@@ -69,25 +75,18 @@ function History() {
   }
 
   const getPlaces = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          const lat = position.coords.latitude;
-          const long = position.coords.longitude;
-          console.log(lat, long)
-          axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
-            .then(response => {
-            if (response.data.results.length > 0) {
-              setLoading(false)
-            } else {
-              setLoading(false);
-              setStatus(true);
-            }
-            setLocations(response.data.results);
-          })
-          .catch(err => console.log(err))
-        });
+    axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
+      .then(response => {
+      if (response.data.results.length > 0) {
+        setLoading(false);
+      } else {
+        setLoading(false);
+        setStatus(true);
       }
-    }
+      setLocations(response.data.results);
+    })
+    .catch(err => console.log(err))
+};
 
     useEffect(() => {      
       (() => {
@@ -112,7 +111,8 @@ function History() {
 
   return (
     <div>
-       {initLoad ? ( <div className={classes.root} style={{display: 'flex', justifyContent: 'center'}}>
+      <NavBar />
+       {initLoad ? ( <div className={classes.loader} >
           <CircularProgress color="secondary" />
         </div>) : (null)}
         {target && locations.length > 0 ? (<div><NavLink to="/" className={classes.textColor} ><Button
@@ -130,7 +130,7 @@ function History() {
             </div>
        )}
 
-        {loading ? ( <div className={classes.root} style={{display: 'flex', justifyContent: 'center'}}>
+        {loading ? ( <div className={classes.loader} >
           <CircularProgress color="secondary" />
         </div>) : (null)}
 

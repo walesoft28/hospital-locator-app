@@ -1,22 +1,32 @@
-import React from 'react';
-import './App.css';
-import Container from '@material-ui/core/Container';
-import { BrowserRouter, Route } from 'react-router-dom';
-import NavBar from './components/navbar/NavBar';
-import History from './components/history/History';
-import Search from './components/search/Search';
+import React, { useState, useEffect } from 'react';
+import Home from './components/home/Home';
+import Login from './components/login/Login';
+import firebase from './components/config/firebase-config';
 
 function App() {
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+ 
+  const authListener = () => {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        setCurrentUser(user);
+        localStorage.setItem('user', user.uid);
+      } else {
+        setCurrentUser(null);
+        localStorage.removeItem('user');
+      }
+    })
+  }
+
+  useEffect(() => {
+    authListener();
+  }, []);
+
   return (
-    <BrowserRouter>
        <div className="App">
-        <NavBar children />
-        <Container maxWidth="md">
-          <Route exact path='/' component={Search} />
-          <Route path='/history' component={History} />
-        </Container>   
+          {currentUser ? (<Home />) : (<Login />)}
       </div>
-    </BrowserRouter> 
   );
 }
 

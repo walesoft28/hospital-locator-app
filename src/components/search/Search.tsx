@@ -8,9 +8,9 @@ import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search'; 
 import CircularProgress from '@material-ui/core/CircularProgress';
 import axios from 'axios';
-import firebase from '../config/firebase-config';
-
+import NavBar from '../navbar/NavBar';
 import LocationResults from '../location-results/LocationResults';
+import firebase from '../config/firebase-config';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -20,6 +20,16 @@ const useStyles = makeStyles((theme: Theme) =>
         marginTop: theme.spacing(7),
         width: '100%'
       },
+    },
+    loader: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '100%',
+      height: '100%',
     },
     formControl: {
         marginTop: theme.spacing(7),
@@ -60,9 +70,9 @@ function Search() {
       setSubmit(prev => !prev);
       if (searchText !== '') setLoading(true);
       setStatus(false);
-      console.log('submitted');
       setQuery(searchText);
       saveToDatabase();
+      sendToGQL();
       // setSearchText('');
     }
    
@@ -91,15 +101,15 @@ function Search() {
       }
     }
 
+    const sendToGQL = () => {
+      axios.post('https://app-graphql-server.herokuapp.com/graphql', {query: query, radius: radius, category: category})
+      .then(res => console.log(res))
+      .catch(err => console.log(err))
+    }
+
     const getPlaces = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          const lat = position.coords.latitude;
-          const long = position.coords.longitude;
-          // console.log(lat, long)
-          axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&location=${lat}, ${long}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
+          axios.get(`${PROXY}${PLACE}query=${SEARCH_QUERY}&radius=${RADIUS}&type=${TYPE}&key=${process.env.REACT_APP_PLACES_API_KEY}`)
             .then(response => {
-            // console.log(response);
             if (response.data.results.length > 0) {
               setLoading(false);
             } else {
@@ -109,9 +119,8 @@ function Search() {
             setLocations(response.data.results);
           })
           .catch(err => console.log(err))
-        });
-      }
-    }
+    };
+  
 
     useEffect(() => {      
       if(query){
@@ -121,12 +130,14 @@ function Search() {
 
   return (
     <div>
-        <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
+      <NavBar />
+      <div className={classes.root}>
+        <form className={classes.root} noValidate  onSubmit={handleSubmit}>
           <Grid container spacing={4}>
             <Grid item xs={12} md={6}>
                 <TextField 
                   id="outlined-search" 
-                  label="Search hospitals, clinics, pharmacy .... " 
+                  label="Enter you address and Search!..." 
                   variant="outlined" 
                   name="searchText"
                   value={searchText}
@@ -180,7 +191,7 @@ function Search() {
 
         {status ? (<div><h4 style={{textAlign: 'center'}}>Oops!......there are no search results for your query!</h4></div>) : (null)}
 
-        {loading ? ( <div className={classes.root} style={{display: 'flex', justifyContent: 'center'}}>
+        {loading ? ( <div className={classes.loader} >
           <CircularProgress color="secondary" />
         </div>) : (null)}
        
@@ -189,6 +200,7 @@ function Search() {
     })) : (null)}
 
 
+      </div>
     </div>
   );
 

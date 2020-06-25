@@ -1,5 +1,4 @@
 import React from 'react';
-
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -11,7 +10,7 @@ import Fab from '@material-ui/core/Fab';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import Zoom from '@material-ui/core/Zoom';
 import { NavLink } from 'react-router-dom';
-
+import firebase from '../config/firebase-config';
 
 
 interface Props {
@@ -73,8 +72,16 @@ const NavBar: React.SFC = () => {
           <Button className={classes.textColor} style={{flexGrow: 1}}>
             <NavLink to="/history" className={classes.textColor}>History</NavLink>
           </Button>
+          <Button 
+            className={classes.textColor} 
+            style={{flexGrow: 1}}
+            onClick={() => firebase.auth().signOut()}
+            >
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
+      
       <Toolbar id="back-to-top-anchor" /> 
          <ScrollTop>
             <Fab color="secondary" size="large" aria-label="scroll back to top">
